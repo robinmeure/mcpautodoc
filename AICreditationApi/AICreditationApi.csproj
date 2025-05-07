@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>2d31a257-d54b-498d-a6df-3bd936627b5d</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;SKEXP0001;SKEXP0010</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;SKEXP0001;SKEXP0010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.44.0-preview" />
+    
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.44.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.44.0" />
+	<PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.4" />
+	<PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.4" />  
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LearnTool\LearnTool.csproj" />
+    <ProjectReference Include="..\PlanTool\PlanTool.csproj" />
+    <ProjectReference Include="..\TemplateTool\TemplateTool.csproj" />
+  </ItemGroup>
+
+</Project>

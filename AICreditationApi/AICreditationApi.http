@@ -1,0 +1,12 @@
+@AICreditationApi_HostAddress = http://localhost:5168
+
+POST {{AICreditationApi_HostAddress}}/api/ServiceAccreditations
+Content-Type: application/json
+Accept: text/event-stream
+Client-Timeout: 3600000
+
+{
+  "topic": "Azure Blob Storage"
+}
+
+###

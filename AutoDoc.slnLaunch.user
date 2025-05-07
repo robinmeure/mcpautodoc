@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "AutoDoc.Console\\AutoDoc.Console.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "AICreditationApi\\AICreditationApi.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

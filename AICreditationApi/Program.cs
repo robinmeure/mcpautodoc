@@ -1,5 +1,6 @@
 using AICreditationApi.Helpers;
 using Azure.Identity;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 using ModelContextProtocol.AspNetCore;
@@ -13,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMcpServer()
     .WithToolsFromAssembly(Assembly.GetAssembly(typeof(PlanTool)))
     .WithToolsFromAssembly(Assembly.GetAssembly(typeof(LearnTool)))
-    .WithToolsFromAssembly(Assembly.GetAssembly(typeof(TemplateTool)));
+    .WithToolsFromAssembly(Assembly.GetAssembly(typeof(TemplateTool)))
+    .WithHttpTransport();
 
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
@@ -54,9 +56,12 @@ builder.Services.AddKernel().AddAzureOpenAIChatCompletion(
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 //builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
+app.UseSwagger();
+app.UseSwaggerUI();
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{

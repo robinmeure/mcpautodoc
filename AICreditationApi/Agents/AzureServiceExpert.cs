@@ -12,7 +12,7 @@ public class AzureServiceExpert
         Kernel agentKernel = kernel.Clone();
 
         // Import plug-in from type
-        agentKernel.ImportPluginFromType<LearnTool>();
+        //agentKernel.ImportPluginFromType<LearnTool>();
 
        
         // Create the agent

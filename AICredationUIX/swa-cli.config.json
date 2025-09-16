@@ -1,0 +1,14 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "react": {
+      "appLocation": ".",
+      "outputLocation": "dist",
+      "appBuildCommand": "npm run build",
+      "run": "npm run dev",
+      "appDevserverUrl": "http://localhost:5173",
+      "appName": "frontend-ddhv3dmjkuwwi",
+      "resourceGroup": "rg-kairos-3"
+    }
+  }
+}

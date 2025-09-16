@@ -1,18 +1,12 @@
 ﻿using Azure;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ModelContextProtocol.Server;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 [McpServerToolType]
 public class LearnTool
@@ -36,35 +30,32 @@ public class LearnTool
         string retValue = string.Empty;
         string project = _config["AzureOpenAI:FoundryProject"]!;
         string bingConnectionId = _config["AzureOpenAI:BingConnectionId"]!;
-        AIProjectClient client = AzureAIAgent.CreateAzureAIClient(project, new AzureCliCredential());
-        AgentsClient agentsClient = client.GetAgentsClient();
+        string modelDeploymentName = _config["AzureOpenAI:ModelDeploymentName"] ?? "gpt-4.1";
 
-        var agent = await CreateAgentAsync(client, agentsClient, bingConnectionId);
+        PersistentAgentsClient agentClient = new(project, new DefaultAzureCredential());
 
-        var agentThread = new AzureAIAgentThread(agentsClient);
+        // Create the Agent
+        AzureAIAgent agent = await CreateAgentAsync(agentClient, bingConnectionId);
+
+        AzureAIAgentThread agentThread = new(agent.Client);
         try
         {
-
             ChatMessageContent message = new(AuthorRole.User, subject);
             await foreach (ChatMessageContent response in agent.InvokeAsync(message, agentThread))
             {
-                retValue = response.Content!;
+                retValue += response.Content;
             }
-            
         }
         finally
         {
             await agentThread.DeleteAsync();
-            await agentsClient.DeleteAgentAsync(agent.Id);
-     
+            await agentClient.Administration.DeleteAgentAsync(agent.Id);
         }
-
         return retValue;
     }
 
-    private async Task<AzureAIAgent> CreateAgentAsync(AIProjectClient projectClient, AgentsClient agentsClient, string bingConnectionId)
+    private async Task<AzureAIAgent> CreateAgentAsync(PersistentAgentsClient agentsClient, string bingConnectionId)
     {
-
         string instructions = """
             You are tasked with searching Microsoft Learn documentation to gather comprehensive information regarding a specified Azure service such as "azure blob".
             Your search should collect all relevant Microsoft Learn content and organize the results into clearly defined sections such as Security, Redundancy, Performance, Certifications, Controls, bicep and others as applicable.
@@ -72,24 +63,23 @@ public class LearnTool
             If there's more information available, continue to search and add to the document.
         """;
 
-        var bingConnection = await projectClient.GetConnectionsClient().GetConnectionAsync(bingConnectionId);
-        var connectionId = bingConnection.Value.Id;
+        BingGroundingToolDefinition bingGroundingTool = new(
+            new BingGroundingSearchToolParameters(
+                [new BingGroundingSearchConfiguration(bingConnectionId)]
+            )
+        );
 
-        AgentsClient agentClient = projectClient.GetAgentsClient();
 
-        ToolConnectionList connectionList = new ToolConnectionList
-        {
-            ConnectionList = { new ToolConnection(connectionId) }
-        };
-        BingGroundingToolDefinition bingGroundingTool = new BingGroundingToolDefinition(connectionList);
-
-        Agent definition = await agentClient.CreateAgentAsync(
-            model: "gpt-4o",
-            name: "my-assistant",
+        // 1. Define an agent on the Azure AI agent service
+        PersistentAgent definition = await agentsClient.Administration.CreateAgentAsync(
+            "gpt-4o",
+            name: "bingagent",
+            description: "bingagent",
             instructions: instructions,
-            tools: new List<ToolDefinition> { bingGroundingTool });
+            tools: [bingGroundingTool]);
 
-        AzureAIAgent agent = new(definition, agentClient);
+        // 2. Create a Semantic Kernel agent based on the agent definition
+        AzureAIAgent agent = new(definition, agentsClient);
 
         return agent;
     }
